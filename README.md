@@ -1,4 +1,4 @@
-# azure-agents-cli
+# aza - The Azure Foundry Agent Service CLI
 
 A lightweight CLI for Azure AI Foundry Agent (assistants) service.
 
