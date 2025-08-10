@@ -3,6 +3,45 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Node.js
+node_modules/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.*.json
+
+# build output
+bin/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# JS/TS coverage & build artifacts
+coverage/
+.next/
+out/
+.build/
+.cache/
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Local env files (keep base .env tracked rules above)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS metadata
+.DS_Store
+
 # C extensions
 *.so
 
