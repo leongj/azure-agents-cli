@@ -1,0 +1,21 @@
+{
+  "name": "azure-agents-cli-node",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "aza": "./bin/aza"
+  },
+  "description": "Lightweight Node CLI to inspect Azure AI Foundry Agents (assistants, threads, runs).",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "start": "node ./bin/aza --help",
+    "lint": "echo 'no lint configured'"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.5.0"
+  }
+}
