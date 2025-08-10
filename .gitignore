@@ -15,9 +15,6 @@ lerna-debug.log*
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.*.json
 
-# build output
-bin/
-
 # Runtime data
 pids/
 *.pid
