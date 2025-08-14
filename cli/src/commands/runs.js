@@ -51,20 +51,35 @@ export async function runShow(ctx, threadId, runId) {
   if (!threadId || !runId) throw usageError('Need threadId and runId');
   const runData = await apiRequest(ctx, `threads/${threadId}/runs/${runId}`);
 
-  let stepsData = null;
+  // Fetch ALL run steps by paginating until has_more is false
+  let stepsAll = [];
   try {
-    stepsData = await apiRequest(ctx, `threads/${threadId}/runs/${runId}/steps`);
+    let after;
+    const limit = 100; // API max per docs
+    while (true) {
+      const query = { limit, order: 'asc', ...(after ? { after } : {}) };
+      const page = await apiRequest(ctx, `threads/${threadId}/runs/${runId}/steps`, { query });
+      const pageItems = Array.isArray(page) ? page : (page?.data || page?.items || []);
+      if (Array.isArray(pageItems)) stepsAll.push(...pageItems);
+
+      const hasMore = !!page?.has_more;
+      if (!hasMore) break;
+
+      // Prefer server-provided last_id, else fall back to last item's id
+      const lastId = page?.last_id || (pageItems?.length ? pageItems[pageItems.length - 1]?.id : undefined);
+      if (!lastId) break; // cannot continue safely
+      after = lastId;
+    }
   } catch (e) {
     if (ctx.debug) console.error('[WARN] Failed to fetch run steps:', e.message);
   }
 
-  // If user asked for JSON or RAW we emit the original JSON objects exactly as returned
+  // If user asked for JSON or RAW we emit the original run JSON and an array of all steps
   if (ctx.json || ctx.raw) {
     const stringify = (obj) => ctx.raw ? JSON.stringify(obj) : JSON.stringify(obj, null, 2);
-    // Simple elegant separation: blank line + --- delimiter (keeps human readability, still easy to split)
-    if (stepsData) {
-      // Run object first, then steps object untouched
-      process.stdout.write(stringify(runData) + '\n\n---\n\n' + stringify(stepsData) + '\n');
+    if (stepsAll && stepsAll.length) {
+      // Run object first, then the full steps array
+      process.stdout.write(stringify(runData) + '\n\n---\n\n' + stringify(stepsAll) + '\n');
     } else {
       process.stdout.write(stringify(runData) + '\n');
     }
@@ -73,12 +88,22 @@ export async function runShow(ctx, threadId, runId) {
 
   // Default (pretty) mode: convert *_at epoch second fields to ISO timestamps for readability.
   const runPretty = convertTimestamps(runData);
-  const stepsPretty = stepsData ? convertTimestamps(stepsData) : null;
+  const stepsPretty = (stepsAll && stepsAll.length) ? convertTimestamps(stepsAll) : null;
 
   console.log('--- Run:');
   console.log(JSON.stringify(runPretty, null, 2));
   if (stepsPretty) {
     console.log('\n--- Run Steps:');
-    console.log(JSON.stringify(stepsPretty, null, 2));
+    // For each step, show: stepId, completed_at, type, then step_details JSON
+    for (const s of stepsPretty) {
+      const stepId = s?.id || '';
+      const completedAt = s?.completed_at || '';
+      const type = s?.type || '';
+      console.log(`${stepId} completed_at: ${completedAt}`);
+      const details = s?.step_details ?? {};
+      // Indent the JSON for readability
+      const detailsJson = JSON.stringify(details, null, 2)
+      console.log(`step_details:\n${detailsJson}\n`);
+    }
   }
 }
