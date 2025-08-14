@@ -19,6 +19,10 @@ export async function dispatch(ctx) {
         if (sub2 === 'show') return runShow(ctx, sub3, sub4);
       }
       throw usageError('Usage: aza threads (list|show <threadId>|runs list <threadId>|runs show <threadId> <runId>)');
+    case 'runs':
+      if (sub === 'list') return runsList(ctx, sub2);
+      if (sub === 'show') return runShow(ctx, sub2, sub3);
+      throw usageError('Usage: aza runs (list <threadId>|show <threadId> <runId>)');
     default:
       throw usageError(`Unknown command ${main}`);
   }

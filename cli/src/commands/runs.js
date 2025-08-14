@@ -4,12 +4,46 @@ import { output, convertTimestamps } from '../util/format.js';
 export async function runsList(ctx, threadId) {
   if (!threadId) throw usageError('Missing threadId');
   const data = await apiRequest(ctx, `threads/${threadId}/runs`);
-  output(ctx, data.runs || data, [
+  const list = data.runs || data;
+
+  // Timestamp prettification for non-raw modes
+  const processed = convertTimestamps(list);
+
+  // Normalize to arrays for table output regardless of wrapping shape
+  const processedRows = Array.isArray(processed) ? processed : (processed?.items || processed?.data || []);
+  const rawRows = Array.isArray(list) ? list : (list?.items || list?.data || []);
+
+  // Derive tools type string and Completed display value for table display
+  const augmentedRows = processedRows.map(r => {
+    const status = r?.status;
+    const completed = r?.completed_at;
+    return {
+      ...r,
+      tool_types: Array.isArray(r?.tools) ? r.tools.map(t => t?.type).filter(Boolean).join(', ') : '',
+      completed_display: (status && status !== 'completed') ? status : completed
+    };
+  });
+
+  // Simple ASCII sort: ISO timestamp strings first, then non-date statuses
+  const isDateLike = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v);
+  const order = (ctx.order || 'asc').toLowerCase();
+
+  const dateRows = augmentedRows.filter(r => isDateLike(r.completed_display));
+  const statusRows = augmentedRows.filter(r => !isDateLike(r.completed_display));
+
+  const cmp = (a, b) => String(a.completed_display).localeCompare(String(b.completed_display));
+  dateRows.sort((a, b) => order === 'asc' ? cmp(a, b) : cmp(b, a));
+
+  const sortedAugmented = [...dateRows, ...statusRows];
+
+  const tableData = ctx.raw ? rawRows : sortedAugmented;
+  const jsonOrRawData = ctx.raw ? list : processed;
+
+  output(ctx, ctx.json ? jsonOrRawData : tableData, [
     { header: 'ID', key: 'id' },
-    { header: 'Status', key: 'status' },
-    { header: 'Created', key: 'created_at' },
-    { header: 'Started', key: 'started_at' },
-    { header: 'Completed', key: 'completed_at' }
+    { header: 'Completed', key: 'completed_display' },
+    { header: 'Agent', key: 'assistant_id' },
+    { header: 'Tools', key: 'tool_types' }
   ]);
 }
 
