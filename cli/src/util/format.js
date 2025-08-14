@@ -41,3 +41,26 @@ function toCell(obj, key) {
 function pad(s, w) {
   s = s || ''; return s.length >= w ? s : s + ' '.repeat(w - s.length);
 }
+
+// Recursively walk an object/array and for any numeric field whose key ends with `_at`
+// and whose value looks like an epoch seconds timestamp (1e9..1e10) replace with ISO string
+// while preserving the original value under <key>_epoch.
+export function convertTimestamps(value) {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map(v => convertTimestamps(v));
+  if (typeof value === 'object') {
+    const out = Array.isArray(value) ? [] : {};
+    for (const [k, v] of Object.entries(value)) {
+      if (v != null && typeof v === 'number' && k.endsWith('_at')) {
+        if (v > 1_000_000_000 && v < 10_000_000_000) { // plausible epoch seconds range
+          out[k] = new Date(v * 1000).toISOString();
+          out[k + '_epoch'] = v;
+          continue;
+        }
+      }
+      out[k] = convertTimestamps(v);
+    }
+    return out;
+  }
+  return value;
+}

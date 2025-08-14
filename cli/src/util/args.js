@@ -36,6 +36,21 @@ export function parseArgs(argv) {
         ctx.after = argv[++i]; break;
       case '--before':
         ctx.before = argv[++i]; break;
+      // New optional flags for threads transcript formatting / filtering
+      case '--show-ids':
+        ctx.showIds = true; break;
+      case '--show-citations':
+        ctx.showCitations = true; break;
+      case '--no-wrap':
+        ctx.noWrap = true; break;
+      case '--max-body': {
+        const v = argv[++i];
+        const n = v ? parseInt(v, 10) : NaN;
+        if (Number.isNaN(n) || n < 0) throw usageError('--max-body requires a non-negative integer');
+        ctx.maxBody = n; break;
+      }
+      case '--run-id':
+        ctx.runId = argv[++i]; break;
       default:
         if (a.startsWith('-')) throw usageError(`Unknown flag ${a}`);
         positional.push(a);
