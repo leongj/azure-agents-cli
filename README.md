@@ -41,7 +41,3 @@ Agents command maps to REST `assistants` endpoint (naming aligned to docs).
 ## Authentication
 
 Run `az login` or provide env vars (`AZURE_CLIENT_ID`, etc.). Scope used: `https://ai.azure.com/.default`.
-
-## Legacy Python (initial draft)
-
-A prior Python scaffold existed under `aza/`; current active implementation is Node CLI in `cli/`.
