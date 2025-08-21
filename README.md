@@ -22,6 +22,10 @@ aza threads list -p <endpoint>
 aza threads show <threadId> -p <endpoint>
 aza threads runs list <threadId> -p <endpoint>
 aza threads runs show <threadId> <runId> -p <endpoint>
+aza vectorstores|vs list -p <endpoint>
+aza vectorstores|vs show <vectorStoreId> -p <endpoint>
+aza vs files list <vectorStoreId> -p <endpoint>
+aza vs files show <vectorStoreId> <fileId> -p <endpoint>
 ```
 
 Flags:
