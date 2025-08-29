@@ -57,7 +57,14 @@ export async function runShow(ctx, threadId, runId) {
     let after;
     const limit = 100; // API max per docs
     while (true) {
-      const query = { limit, order: 'asc', ...(after ? { after } : {}) };
+      // Add include[] expansion so each step returns nested file_search result content
+      // TODO: review whether limit/order are valid on the Azure REST API
+      const query = { 
+        limit, 
+        order: 'asc', 
+        ...(after ? { after } : {}), 
+        'include[]': 'step_details.tool_calls[*].file_search.results[*].content'
+      };
       const page = await apiRequest(ctx, `threads/${threadId}/runs/${runId}/steps`, { query });
       const pageItems = Array.isArray(page) ? page : (page?.data || page?.items || []);
       if (Array.isArray(pageItems)) stepsAll.push(...pageItems);
