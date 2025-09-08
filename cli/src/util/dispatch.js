@@ -1,5 +1,5 @@
 import { usageError } from "../http.js";
-import { agentsList } from "../commands/agents.js";
+import { agentsList, agentShow } from "../commands/agents.js";
 import { threadsList, threadShow } from "../commands/threads.js";
 import { runsList, runShow } from "../commands/runs.js";
 import {
@@ -17,7 +17,8 @@ export async function dispatch(ctx) {
   switch (main) {
     case "agents":
       if (sub === "list") return agentsList(ctx);
-      throw usageError("Usage: aza agents list");
+      if (sub === "show") return agentShow(ctx, sub2);
+      throw usageError("Usage: aza agents (list|show <agentId>)");
     case "threads":
       if (sub === "list") return threadsList(ctx);
       if (sub === "show") return threadShow(ctx, sub2);
