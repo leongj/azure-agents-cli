@@ -20,3 +20,15 @@ export async function agentsList(ctx) {
     { header: 'Created', key: 'created_at' }
   ]);
 }
+
+// Show single assistant/agent: GET /assistants/{assistantId}
+export async function agentShow(ctx, agentId) {
+  if (!agentId) throw usageError('Missing agentId');
+  const a = await apiRequest(ctx, `assistants/${agentId}`);
+  if (ctx.raw) {
+    process.stdout.write(typeof a === 'string' ? a : JSON.stringify(a));
+    return;
+  }
+  const processed = ctx.json ? a : convertTimestamps(a);
+  console.log(JSON.stringify(processed, null, 2));
+}
