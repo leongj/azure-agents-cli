@@ -1,3 +1,7 @@
+import dotenv from 'dotenv';
+// Load environment variables from src/.env (so .env located next to this file is consumed)
+dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
+
 import { parseArgs } from './util/args.js';
 import { dispatch } from './util/dispatch.js';
 
